@@ -10,6 +10,7 @@ import {
   IconBolt as Zap,
   IconTerminal as Terminal,
   IconCast as MonitorPlay,
+  IconDeviceDesktop as Desktop,
   IconSettings as Settings,
   IconSun as Sun,
   IconMoon as Moon
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/flasher', icon: Zap, label: 'Flasher' },
   { to: '/terminal', icon: Terminal, label: 'Terminal' },
   { to: '/scrcpy', icon: MonitorPlay, label: 'Scrcpy' },
+  { to: '/samsung-dex', icon: Desktop, label: 'Samsung DeX' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 

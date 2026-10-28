@@ -188,6 +188,14 @@ Screenshots for the dashboard, devices, app manager, File Explorer, Flasher,
 Terminal, Scrcpy, and Settings are in
 [`here`](screenshots/README.md).
 
+## Samsung DeX extension (local fork)
+
+This fork adds a genuine Samsung dual-mode DeX workspace to ADBKit, including
+independent phone-local activation (when allowed by the device firmware),
+attachment to an existing external DeX session, streaming presets, and
+confirmation-gated disconnect controls. It never mirrors the phone's main
+Android display. See [Samsung DeX integration notes](docs/SamsungDeX.md).
+
 ## Development
 
 ### Requirements

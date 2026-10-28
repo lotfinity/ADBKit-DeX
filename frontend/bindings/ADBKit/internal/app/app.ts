@@ -3,7 +3,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wailsio/runtime";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -36,6 +36,10 @@ import * as scrcpy$0 from "../scrcpy/models.js";
 // @ts-ignore: Unused imports
 import * as shell$0 from "../shell/models.js";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
 export function CancelFileTransfer(): $CancellablePromise<void> {
     return $Call.ByID(3540445436);
 }
@@ -61,7 +65,9 @@ export function CloseTerminal(sessionID: string): $CancellablePromise<void> {
 }
 
 export function CompleteSetup(): $CancellablePromise<binary$0.SetupState | null> {
-    return $Call.ByID(455247985);
+    return $Call.ByID(455247985).then(($result: any) => {
+        return $$createType1($result);
+    });
 }
 
 export function ConnectWireless(address: string): $CancellablePromise<string> {
@@ -76,11 +82,11 @@ export function DeleteFile(remotePath: string): $CancellablePromise<string> {
     return $Call.ByID(1355371458, remotePath);
 }
 
-export function DeleteMultipleFiles(remotePaths: string[] | null): $CancellablePromise<string> {
+export function DeleteMultipleFiles(remotePaths: string[]): $CancellablePromise<string> {
     return $Call.ByID(3099217239, remotePaths);
 }
 
-export function DisableMultiplePackages(packageNames: string[] | null): $CancellablePromise<string> {
+export function DisableMultiplePackages(packageNames: string[]): $CancellablePromise<string> {
     return $Call.ByID(2373593656, packageNames);
 }
 
@@ -100,7 +106,7 @@ export function DownloadScrcpy(): $CancellablePromise<void> {
     return $Call.ByID(2662949553);
 }
 
-export function EnableMultiplePackages(packageNames: string[] | null): $CancellablePromise<string> {
+export function EnableMultiplePackages(packageNames: string[]): $CancellablePromise<string> {
     return $Call.ByID(2259882189, packageNames);
 }
 
@@ -137,7 +143,9 @@ export function ForceStopPackage(packageName: string): $CancellablePromise<strin
 }
 
 export function GetActiveScrcpySession(): $CancellablePromise<scrcpy$0.Session | null> {
-    return $Call.ByID(489230595);
+    return $Call.ByID(489230595).then(($result: any) => {
+        return $$createType3($result);
+    });
 }
 
 export function GetActiveSerial(): $CancellablePromise<string> {
@@ -149,43 +157,59 @@ export function GetActiveSlot(serial: string): $CancellablePromise<string> {
 }
 
 export function GetAppConfig(): $CancellablePromise<core$0.AppConfigSnapshot> {
-    return $Call.ByID(3154339166);
+    return $Call.ByID(3154339166).then(($result: any) => {
+        return $$createType4($result);
+    });
 }
 
-export function GetAuditLogs(limit: number): $CancellablePromise<audit$0.Entry[] | null> {
-    return $Call.ByID(229985055, limit);
+export function GetAuditLogs(limit: number): $CancellablePromise<audit$0.Entry[]> {
+    return $Call.ByID(229985055, limit).then(($result: any) => {
+        return $$createType6($result);
+    });
 }
 
 export function GetBinaryStatus(): $CancellablePromise<binary$0.BinarySetupResult | null> {
-    return $Call.ByID(2536319202);
+    return $Call.ByID(2536319202).then(($result: any) => {
+        return $$createType8($result);
+    });
 }
 
-export function GetCapabilities(): $CancellablePromise<{ [_ in string]?: boolean } | null> {
-    return $Call.ByID(1642500355);
+export function GetCapabilities(): $CancellablePromise<{ [_ in string]?: boolean }> {
+    return $Call.ByID(1642500355).then(($result: any) => {
+        return $$createType9($result);
+    });
 }
 
 export function GetDeviceInfo(serial: string): $CancellablePromise<device$0.Info | null> {
-    return $Call.ByID(3142718507, serial);
+    return $Call.ByID(3142718507, serial).then(($result: any) => {
+        return $$createType11($result);
+    });
 }
 
 export function GetDeviceMode(serial: string): $CancellablePromise<device$0.Mode> {
     return $Call.ByID(2763349560, serial);
 }
 
-export function GetDeviceNicknames(): $CancellablePromise<{ [_ in string]?: string } | null> {
-    return $Call.ByID(2510226532);
+export function GetDeviceNicknames(): $CancellablePromise<{ [_ in string]?: string }> {
+    return $Call.ByID(2510226532).then(($result: any) => {
+        return $$createType12($result);
+    });
 }
 
-export function GetDevices(): $CancellablePromise<device$0.Summary[] | null> {
-    return $Call.ByID(1839259332);
+export function GetDevices(): $CancellablePromise<device$0.Summary[]> {
+    return $Call.ByID(1839259332).then(($result: any) => {
+        return $$createType14($result);
+    });
 }
 
 export function GetDirectorySize(remotePath: string): $CancellablePromise<string> {
     return $Call.ByID(1427428581, remotePath);
 }
 
-export function GetFastbootDevices(): $CancellablePromise<flasher$0.FastbootDeviceInfo[] | null> {
-    return $Call.ByID(957713130);
+export function GetFastbootDevices(): $CancellablePromise<flasher$0.FastbootDeviceInfo[]> {
+    return $Call.ByID(957713130).then(($result: any) => {
+        return $$createType16($result);
+    });
 }
 
 export function GetManagedBinaryDir(): $CancellablePromise<string> {
@@ -193,15 +217,27 @@ export function GetManagedBinaryDir(): $CancellablePromise<string> {
 }
 
 export function GetPackageDetails(packageName: string): $CancellablePromise<packagemgr$0.Details> {
-    return $Call.ByID(2421988071, packageName);
+    return $Call.ByID(2421988071, packageName).then(($result: any) => {
+        return $$createType17($result);
+    });
 }
 
 export function GetPerformanceSnapshot(serial: string): $CancellablePromise<device$0.PerformanceSnapshot> {
-    return $Call.ByID(981742441, serial);
+    return $Call.ByID(981742441, serial).then(($result: any) => {
+        return $$createType18($result);
+    });
 }
 
 export function GetRuntimeDiagnostics(): $CancellablePromise<core$0.RuntimeDiagnostics> {
-    return $Call.ByID(1841691581);
+    return $Call.ByID(1841691581).then(($result: any) => {
+        return $$createType19($result);
+    });
+}
+
+export function GetSamsungDeXStatus(serial: string): $CancellablePromise<$models.SamsungDeXState | null> {
+    return $Call.ByID(3305880794, serial).then(($result: any) => {
+        return $$createType21($result);
+    });
 }
 
 export function GetScrcpyClipboard(serial: string): $CancellablePromise<string> {
@@ -209,11 +245,15 @@ export function GetScrcpyClipboard(serial: string): $CancellablePromise<string> 
 }
 
 export function GetScrcpyEncoderSupport(serial: string): $CancellablePromise<scrcpy$0.EncoderSupport | null> {
-    return $Call.ByID(193742080, serial);
+    return $Call.ByID(193742080, serial).then(($result: any) => {
+        return $$createType23($result);
+    });
 }
 
 export function GetSetupState(): $CancellablePromise<binary$0.SetupState | null> {
-    return $Call.ByID(78318919);
+    return $Call.ByID(78318919).then(($result: any) => {
+        return $$createType1($result);
+    });
 }
 
 /**
@@ -224,7 +264,9 @@ export function GetStayAwakeWhileCharging(serial: string): $CancellablePromise<b
 }
 
 export function GetStorageInfo(): $CancellablePromise<file$0.StorageInfo> {
-    return $Call.ByID(671426754);
+    return $Call.ByID(671426754).then(($result: any) => {
+        return $$createType24($result);
+    });
 }
 
 /**
@@ -237,8 +279,10 @@ export function GetWindowState(): $CancellablePromise<string> {
     return $Call.ByID(3341756802);
 }
 
-export function GetWirelessHistory(): $CancellablePromise<core$0.WirelessHistoryEntry[] | null> {
-    return $Call.ByID(2096684807);
+export function GetWirelessHistory(): $CancellablePromise<core$0.WirelessHistoryEntry[]> {
+    return $Call.ByID(2096684807).then(($result: any) => {
+        return $$createType26($result);
+    });
 }
 
 export function ImportAuditLogs(path: string): $CancellablePromise<number> {
@@ -257,20 +301,28 @@ export function LaunchPackage(packageName: string): $CancellablePromise<string> 
     return $Call.ByID(3595758248, packageName);
 }
 
-export function ListFiles(remotePath: string, showHidden: boolean): $CancellablePromise<file$0.Entry[] | null> {
-    return $Call.ByID(251904534, remotePath, showHidden);
+export function ListFiles(remotePath: string, showHidden: boolean): $CancellablePromise<file$0.Entry[]> {
+    return $Call.ByID(251904534, remotePath, showHidden).then(($result: any) => {
+        return $$createType28($result);
+    });
 }
 
-export function ListManagedBinaries(): $CancellablePromise<string[] | null> {
-    return $Call.ByID(2241672117);
+export function ListManagedBinaries(): $CancellablePromise<string[]> {
+    return $Call.ByID(2241672117).then(($result: any) => {
+        return $$createType29($result);
+    });
 }
 
-export function ListPackages(filterType: string): $CancellablePromise<packagemgr$0.Info[] | null> {
-    return $Call.ByID(3630353506, filterType);
+export function ListPackages(filterType: string): $CancellablePromise<packagemgr$0.Info[]> {
+    return $Call.ByID(3630353506, filterType).then(($result: any) => {
+        return $$createType31($result);
+    });
 }
 
-export function ListSdCards(): $CancellablePromise<file$0.SdCard[] | null> {
-    return $Call.ByID(1531114407);
+export function ListSdCards(): $CancellablePromise<file$0.SdCard[]> {
+    return $Call.ByID(1531114407).then(($result: any) => {
+        return $$createType33($result);
+    });
 }
 
 export function PairWireless(address: string, code: string): $CancellablePromise<string> {
@@ -281,7 +333,7 @@ export function PullFile(remotePath: string, localPath: string): $CancellablePro
     return $Call.ByID(2408197358, remotePath, localPath);
 }
 
-export function PullMultipleFiles(remotePaths: string[] | null, localDirectory: string): $CancellablePromise<string> {
+export function PullMultipleFiles(remotePaths: string[], localDirectory: string): $CancellablePromise<string> {
     return $Call.ByID(3212602523, remotePaths, localDirectory);
 }
 
@@ -293,7 +345,7 @@ export function PushFile(localPath: string, remotePath: string): $CancellablePro
     return $Call.ByID(2731830669, localPath, remotePath);
 }
 
-export function PushMultipleFiles(localPaths: string[] | null, remoteDirectory: string): $CancellablePromise<string> {
+export function PushMultipleFiles(localPaths: string[], remoteDirectory: string): $CancellablePromise<string> {
     return $Call.ByID(1562821958, localPaths, remoteDirectory);
 }
 
@@ -310,23 +362,36 @@ export function RenameFile(oldRemotePath: string, newRemotePath: string): $Cance
 }
 
 export function RetryBinaryDetection(): $CancellablePromise<binary$0.BinarySetupResult | null> {
-    return $Call.ByID(2288452565);
+    return $Call.ByID(2288452565).then(($result: any) => {
+        return $$createType8($result);
+    });
 }
 
 export function RunCustomFastbootCommand(serial: string, args: string): $CancellablePromise<string> {
     return $Call.ByID(990074562, serial, args);
 }
 
+/**
+ * SamsungDeXControl: action is activate, open, attach or stop.
+ * The existing proven DeX activator script owns the lifecycle. Its isolated
+ * optional "attach" mode NEVER creates a display or mirrors phone display 0.
+ */
+export function SamsungDeXControl(serial: string, action: string, bitrate: number, fps: number): $CancellablePromise<string> {
+    return $Call.ByID(1851300731, serial, action, bitrate, fps);
+}
+
 export function SaveLogcatToFile(content: string, defaultFilename: string): $CancellablePromise<void> {
     return $Call.ByID(4261422803, content, defaultFilename);
 }
 
-export function SaveWirelessHistory(entries: core$0.WirelessHistoryEntry[] | null): $CancellablePromise<void> {
+export function SaveWirelessHistory(entries: core$0.WirelessHistoryEntry[]): $CancellablePromise<void> {
     return $Call.ByID(280639586, entries);
 }
 
 export function ScanRomFolder(folderPath: string): $CancellablePromise<flasher$0.Plan | null> {
-    return $Call.ByID(3708452608, folderPath);
+    return $Call.ByID(3708452608, folderPath).then(($result: any) => {
+        return $$createType35($result);
+    });
 }
 
 export function SelectApkFile(): $CancellablePromise<string> {
@@ -349,12 +414,16 @@ export function SelectFlashImageFile(): $CancellablePromise<string> {
     return $Call.ByID(3511365674);
 }
 
-export function SelectMultipleFiles(): $CancellablePromise<string[] | null> {
-    return $Call.ByID(2153736906);
+export function SelectMultipleFiles(): $CancellablePromise<string[]> {
+    return $Call.ByID(2153736906).then(($result: any) => {
+        return $$createType29($result);
+    });
 }
 
 export function SelectPlatformToolsDirectory(): $CancellablePromise<dialog$0.PlatformToolsSelection | null> {
-    return $Call.ByID(3336253378);
+    return $Call.ByID(3336253378).then(($result: any) => {
+        return $$createType37($result);
+    });
 }
 
 export function SelectSavePath(defaultFilename: string): $CancellablePromise<string> {
@@ -362,7 +431,9 @@ export function SelectSavePath(defaultFilename: string): $CancellablePromise<str
 }
 
 export function SelectScrcpyDirectory(): $CancellablePromise<dialog$0.ScrcpyDirectorySelection | null> {
-    return $Call.ByID(1616760728);
+    return $Call.ByID(1616760728).then(($result: any) => {
+        return $$createType39($result);
+    });
 }
 
 export function SelectSideloadFile(): $CancellablePromise<string> {
@@ -420,15 +491,21 @@ export function StartScrcpyRecording(serial: string, outputPath: string, opts: s
 }
 
 export function StartScrcpySession(serial: string, opts: scrcpy$0.Options): $CancellablePromise<scrcpy$0.Session | null> {
-    return $Call.ByID(257507581, serial, opts);
+    return $Call.ByID(257507581, serial, opts).then(($result: any) => {
+        return $$createType3($result);
+    });
 }
 
 export function StartTerminal(serial: string): $CancellablePromise<shell$0.Session | null> {
-    return $Call.ByID(441098137, serial);
+    return $Call.ByID(441098137, serial).then(($result: any) => {
+        return $$createType41($result);
+    });
 }
 
 export function StartTerminalSession(mode: string, serial: string, initialArgs: string): $CancellablePromise<shell$0.Session | null> {
-    return $Call.ByID(399524219, mode, serial, initialArgs);
+    return $Call.ByID(399524219, mode, serial, initialArgs).then(($result: any) => {
+        return $$createType41($result);
+    });
 }
 
 export function StopLogcat(serial: string): $CancellablePromise<void> {
@@ -448,10 +525,12 @@ export function TakeScrcpyScreenshot(sessionID: string, outputPath: string): $Ca
 }
 
 export function UnblockPath(remotePath: string): $CancellablePromise<file$0.UnblockResult> {
-    return $Call.ByID(1740768098, remotePath);
+    return $Call.ByID(1740768098, remotePath).then(($result: any) => {
+        return $$createType42($result);
+    });
 }
 
-export function UninstallMultiplePackages(packageNames: string[] | null): $CancellablePromise<string> {
+export function UninstallMultiplePackages(packageNames: string[]): $CancellablePromise<string> {
     return $Call.ByID(3120719178, packageNames);
 }
 
@@ -460,7 +539,9 @@ export function UninstallPackage(packageName: string): $CancellablePromise<strin
 }
 
 export function UpdatePreferences(payload: core$0.PreferencesPayload): $CancellablePromise<core$0.AppConfigSnapshot> {
-    return $Call.ByID(2611727164, payload);
+    return $Call.ByID(2611727164, payload).then(($result: any) => {
+        return $$createType4($result);
+    });
 }
 
 export function UpdateScrcpyOptions(options: core$0.ScrcpyOptions): $CancellablePromise<void> {
@@ -486,3 +567,48 @@ export function WakeScreen(serial: string): $CancellablePromise<string> {
 export function WipeData(serial: string): $CancellablePromise<string> {
     return $Call.ByID(858489924, serial);
 }
+
+// Private type creation functions
+const $$createType0 = binary$0.SetupState.createFrom;
+const $$createType1 = $Create.Nullable($$createType0);
+const $$createType2 = scrcpy$0.Session.createFrom;
+const $$createType3 = $Create.Nullable($$createType2);
+const $$createType4 = core$0.AppConfigSnapshot.createFrom;
+const $$createType5 = audit$0.Entry.createFrom;
+const $$createType6 = $Create.Array($$createType5);
+const $$createType7 = binary$0.BinarySetupResult.createFrom;
+const $$createType8 = $Create.Nullable($$createType7);
+const $$createType9 = $Create.Map($Create.Any, $Create.Any);
+const $$createType10 = device$0.Info.createFrom;
+const $$createType11 = $Create.Nullable($$createType10);
+const $$createType12 = $Create.Map($Create.Any, $Create.Any);
+const $$createType13 = device$0.Summary.createFrom;
+const $$createType14 = $Create.Array($$createType13);
+const $$createType15 = flasher$0.FastbootDeviceInfo.createFrom;
+const $$createType16 = $Create.Array($$createType15);
+const $$createType17 = packagemgr$0.Details.createFrom;
+const $$createType18 = device$0.PerformanceSnapshot.createFrom;
+const $$createType19 = core$0.RuntimeDiagnostics.createFrom;
+const $$createType20 = $models.SamsungDeXState.createFrom;
+const $$createType21 = $Create.Nullable($$createType20);
+const $$createType22 = scrcpy$0.EncoderSupport.createFrom;
+const $$createType23 = $Create.Nullable($$createType22);
+const $$createType24 = file$0.StorageInfo.createFrom;
+const $$createType25 = core$0.WirelessHistoryEntry.createFrom;
+const $$createType26 = $Create.Array($$createType25);
+const $$createType27 = file$0.Entry.createFrom;
+const $$createType28 = $Create.Array($$createType27);
+const $$createType29 = $Create.Array($Create.Any);
+const $$createType30 = packagemgr$0.Info.createFrom;
+const $$createType31 = $Create.Array($$createType30);
+const $$createType32 = file$0.SdCard.createFrom;
+const $$createType33 = $Create.Array($$createType32);
+const $$createType34 = flasher$0.Plan.createFrom;
+const $$createType35 = $Create.Nullable($$createType34);
+const $$createType36 = dialog$0.PlatformToolsSelection.createFrom;
+const $$createType37 = $Create.Nullable($$createType36);
+const $$createType38 = dialog$0.ScrcpyDirectorySelection.createFrom;
+const $$createType39 = $Create.Nullable($$createType38);
+const $$createType40 = shell$0.Session.createFrom;
+const $$createType41 = $Create.Nullable($$createType40);
+const $$createType42 = file$0.UnblockResult.createFrom;

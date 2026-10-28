@@ -34,7 +34,7 @@ function DeviceSync() {
 }
 export function AppShell() {
   const location = useLocation()
-  const isNoGlobalScroll = ['/apps', '/files', '/devices', '/terminal', '/scrcpy', '/settings'].includes(location.pathname)
+  const isNoGlobalScroll = ['/apps', '/files', '/devices', '/terminal', '/scrcpy', '/samsung-dex', '/settings'].includes(location.pathname)
 
   const [setupChecked, setSetupChecked] = useState(false)
   const [setupComplete, setSetupComplete] = useState(false)

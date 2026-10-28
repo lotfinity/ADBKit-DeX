@@ -11,6 +11,7 @@ const FlasherPage = lazy(() => import('@/routes/FlasherPage'))
 const TerminalPage = lazy(() => import('@/routes/TerminalPage'))
 const ScrcpyPage = lazy(() => import('@/routes/ScrcpyPage'))
 const SettingsPage = lazy(() => import('@/routes/SettingsPage'))
+const SamsungDeXPage = lazy(() => import('@/routes/SamsungDeXPage'))
 
 function PageLoader() {
   return (
@@ -64,6 +65,10 @@ export const router = createHashRouter([
       {
         path: 'scrcpy',
         element: routeElement(<ScrcpyPage />),
+      },
+      {
+        path: 'samsung-dex',
+        element: routeElement(<SamsungDeXPage />),
       },
       {
         path: 'settings',
