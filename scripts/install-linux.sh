@@ -3,7 +3,7 @@
 set -euo pipefail
 
 REPO="lotfinity/ADBKit-DeX"
-TAG="v0.1.0-dex"
+TAG="v0.1.1-dex"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MODE=binary
 DEPS=1
