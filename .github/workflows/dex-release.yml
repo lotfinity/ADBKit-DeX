@@ -1,0 +1,58 @@
+name: Build corrected Samsung DeX Linux release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'internal/app/app_dex.go'
+      - 'dex/linux/note20-dex-linux'
+      - 'scripts/install-linux.sh'
+      - '.github/workflows/dex-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.0'
+          cache: true
+      - name: Install GTK4 and WebKitGTK build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev libsoup-3.0-dev
+      - name: Compile React frontend
+        working-directory: frontend
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+      - name: Test DeX backend
+        run: go test ./internal/app -run TestSamsungDeX -count=1
+      - name: Build native executable
+        run: |
+          mkdir -p dist
+          go build -o dist/ADBKit-DeX-linux-amd64 .
+          chmod +x dist/ADBKit-DeX-linux-amd64
+          cd dist && sha256sum ADBKit-DeX-linux-amd64 > ADBKit-DeX-linux-amd64.sha256
+      - name: Publish corrected Linux release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.1-dex
+          name: 'ADBKit + Samsung DeX v0.1.1 (Linux amd64)'
+          make_latest: true
+          body: |
+            Fixes ADBKit reporting DeX attach success without a window.
+            When the optional display ID is blank, Samsung DeX's nonzero desktop display is detected automatically.
+            Immediate scrcpy failures now return the relevant error instead of a false success.
+            Android display ID 0 is never streamed.
+            Install: git clone https://github.com/lotfinity/ADBKit-DeX.git && cd ADBKit-DeX && bash scripts/install-linux.sh
+          files: |
+            dist/ADBKit-DeX-linux-amd64
+            dist/ADBKit-DeX-linux-amd64.sha256
