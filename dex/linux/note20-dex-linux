@@ -72,7 +72,10 @@ case "$MODE" in
   run|start|attach)
     if [ "$MODE" = "attach" ]; then
       snapshot
-      ID="${DEX_DISPLAY_ID:-$(desktopid)}"
+      # Zero is the old GUI's "automatic" sentinel, not Android display 0.
+      # Map it to Samsung's real DeX display ID, which is validated below.
+      ID="${DEX_DISPLAY_ID:-}"
+      if [ -z "$ID" ] || [ "$ID" = "0" ]; then ID="$(desktopid)"; fi
       [[ "$ID" =~ ^[0-9]+$ && "$ID" -gt 0 && "$ID" -le 255 ]] || die "Invalid DeX display ID: $ID (display 0 prohibited)"
       DISPLAY_INFO="$(adbc shell dumpsys display | grep 'mBaseDisplayInfo=DisplayInfo' | grep -E "displayId[ =]$ID([^0-9]|$)" | head -1 || true)"
       [ -n "$DISPLAY_INFO" ] || die "DeX display ID $ID is not currently connected. Start DeX on Windows or another authorized receiver first."
