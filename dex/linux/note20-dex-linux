@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# Real Samsung DeX dual-mode (a second desktop), NOT phone screen mirroring.
+set -euo pipefail
+MODE="run"
+if [ "$#" -gt 0 ]; then MODE="$1"; fi
+JAR="${DEX_SERVER_JAR:-$HOME/.local/share/note20-dex/scrcpydex-server.jar}"
+REMOTE_JAR="/data/local/tmp/scrcpydex-server.jar"
+PIDFILE="/data/local/tmp/note20-dex-loopback.pid"
+LOGFILE="/data/local/tmp/note20-dex-loopback.log"
+
+die(){ echo "ERROR: $*" >&2; exit 1; }
+SERIAL="${NOTE20_SERIAL:-}"
+if [ -z "$SERIAL" ]; then
+  mapfile -t DEVICES < <(adb devices | awk 'NR>1 && $2=="device" {print $1}')
+  if [ "${#DEVICES[@]}" -ne 1 ]; then
+    die "Set NOTE20_SERIAL to one connected ADB device (found ${#DEVICES[@]} transports)."
+  fi
+  SERIAL="${DEVICES[0]}"
+fi
+adb -s "$SERIAL" get-state &>/dev/null || die "Selected ADB device is disconnected or unauthorized: $SERIAL"
+adbc(){ adb -s "$SERIAL" "$@"; }
+snapshot(){ DMS="$(adbc shell dumpsys desktopmode 2>/dev/null | tr -d '\r')"; }
+desktopid(){ printf '%s\n' "$DMS" | sed -n 's/^[[:space:]]*mDesktopDisplayId=\([0-9][0-9]*\).*/\1/p' | head -1; }
+dual(){
+  [[ "$DMS" == *"mDualModeEnabled=true"* ]] || return 1
+  local n
+  n="$(desktopid)"
+  [[ "$n" =~ ^[0-9]+$ && "$n" -gt 0 ]]
+}
+loopback(){
+  [[ "$DMS" == *"WIRELESS_DEX"* ]] &&
+  adbc shell dumpsys display 2>/dev/null | grep -q 'mRemoteDisplayInterface=127.0.0.1:7236'
+}
+activate(){
+  snapshot
+  if dual; then
+    if loopback; then echo "Samsung DeX already independent: display $(desktopid)"; return 0; fi
+    # DeX takes a few seconds to shut down; do not misdiagnose a transitional state.
+    for i in $(seq 1 8); do
+      sleep 1
+      snapshot
+      if ! dual; then break; fi
+      if loopback; then echo "Samsung DeX already independent: display $(desktopid)"; return 0; fi
+    done
+    if dual; then die "DeX is running through another external display (e.g. Windows). Disconnect that connection first."; fi
+  fi
+  echo "Activating real Samsung DeX via phone-local RTSP..."
+  [ -r "$JAR" ] || die "Missing server JAR: $JAR"
+  adbc push "$JAR" "$REMOTE_JAR" >/dev/null
+  adbc shell "nohup setsid sh -c 'CLASSPATH=$REMOTE_JAR app_process /data/local/tmp com.scrcpydex.server.Server activate' > $LOGFILE 2>&1 < /dev/null & echo \$! > $PIDFILE" >/dev/null
+  for i in $(seq 1 30); do
+    sleep 1
+    snapshot
+    if dual && loopback; then echo "SUCCESS: real DeX dual-mode display $(desktopid)"; return 0; fi
+    if adbc shell "grep -q -E 'Fatal error|Incompatibility detected|Timeout waiting' $LOGFILE" >/dev/null 2>&1; then
+      adbc shell "tail -35 $LOGFILE" >&2 || true
+      die "Activator reported an error."
+    fi
+  done
+  adbc shell "tail -35 $LOGFILE" >&2 || true
+  die "DeX did not activate within 30s."
+}
+snapshot
+case "$MODE" in
+  check|status)
+    if dual; then
+      if loopback; then echo "ACTIVE: true Samsung DeX on display $(desktopid), activated by phone loopback; Windows independent"
+      else echo "ACTIVE: true DeX on display $(desktopid), dependent on external connection"
+      fi
+    else echo "INACTIVE: Samsung DeX dual-mode not active"; fi ;;
+  activate) activate ;;
+  run|start|attach)
+    if [ "$MODE" = "attach" ]; then
+      snapshot
+      ID="${DEX_DISPLAY_ID:-$(desktopid)}"
+      [[ "$ID" =~ ^[0-9]+$ && "$ID" -gt 0 && "$ID" -le 255 ]] || die "Invalid DeX display ID: $ID (display 0 prohibited)"
+      DISPLAY_INFO="$(adbc shell dumpsys display | grep 'mBaseDisplayInfo=DisplayInfo' | grep -E "displayId[ =]$ID([^0-9]|$)" | head -1 || true)"
+      [ -n "$DISPLAY_INFO" ] || die "DeX display ID $ID is not currently connected. Start DeX on Windows or another authorized receiver first."
+      if ! dual && [[ "$DISPLAY_INFO" != *FLAG_PC_DEX_DISPLAY* ]]; then
+        die "Display $ID exists but is not a confirmed Samsung dual-mode DeX display."
+      fi
+      echo "Attaching to existing Samsung DeX display $ID, without starting a mirror of display 0."
+    else
+      activate
+      ID="$(desktopid)"
+    fi
+    echo "Opening ONLY real DeX display $ID, while phone display 0 stays normal."
+    # The Note20 Snapdragon uses Qualcomm AVC; other Galaxy phones (e.g. Note10 Exynos)
+    # must use their own Android codec rather than the Note20-only encoder name.
+    ENCODER_FLAGS=()
+    HARDWARE="$(adbc shell getprop ro.hardware 2>/dev/null | tr -d '\r')"
+    if [[ "$HARDWARE" == "qcom" ]]; then ENCODER_FLAGS=(--video-encoder=OMX.qcom.video.encoder.avc); fi
+    # Optional presets from the GUI; defaults preserve the proven 12M/60fps configuration.
+    RATE="${DEX_VIDEO_BITRATE:-12M}"
+    FPS="${DEX_MAX_FPS:-60}"
+    SIZE="${DEX_MAX_SIZE:-0}"
+    SOUND="${DEX_AUDIO:-0}"
+    VIDEO_FLAGS=(--video-bit-rate="$RATE" --max-fps="$FPS")
+    if [[ "$SIZE" =~ ^[1-9][0-9]+$ ]]; then VIDEO_FLAGS+=(--max-size="$SIZE"); fi
+    AUDIO_FLAGS=(--no-audio)
+    if [ "$SOUND" = "1" ]; then AUDIO_FLAGS=(); fi
+    exec scrcpy -s "$SERIAL" --display-id="$ID" "${ENCODER_FLAGS[@]}" "${VIDEO_FLAGS[@]}" --mouse=uhid "${AUDIO_FLAGS[@]}" --window-title="${DEX_WINDOW_TITLE:-Samsung DeX (Dual Mode) - Note20 Ultra}"
+    ;;
+  stop)
+    if loopback; then
+      echo "Stopping loopback DeX..."
+      adbc shell "CLASSPATH=$REMOTE_JAR app_process /data/local/tmp com.scrcpydex.server.Server disconnect" || true
+      # Terminate only the activation process from this app; never other app_process instances.
+      PIDS="$(adbc shell ps -A -o PID,NAME,ARGS | awk '$2=="app_process" && /com.scrcpydex.server.Server activate/ {print $1}')"
+      for P in $PIDS; do adbc shell kill "$P" 2>/dev/null || true; done
+      adbc shell "if [ -f $PIDFILE ]; then kill \$(cat $PIDFILE) 2>/dev/null || true; rm -f $PIDFILE; fi" || true
+      for i in $(seq 1 10); do
+        sleep 1; snapshot
+        if ! dual; then echo "DeX stopped; normal phone display remains active."; break; fi
+      done
+    else echo "Not stopping: no independent loopback DeX session."; fi ;;
+  logs) adbc shell "tail -60 $LOGFILE" ;;
+  *) echo "Usage: NOTE20_SERIAL=<adb-device> $0 [run|attach|activate|status|stop|logs]"; exit 64 ;;
+esac

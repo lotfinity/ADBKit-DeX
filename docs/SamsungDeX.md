@@ -1,59 +1,96 @@
-# Samsung DeX extension for ADBKit
+# Samsung DeX in ADBKit — install and compatibility
 
-This local ADBKit fork adds a React/Wails **Samsung DeX** screen while retaining
-the upstream Android device, app, file, shell, Logcat, Fastboot and scrcpy tools.
+This fork extends the upstream [ADBKit](https://github.com/Drenzzz/ADBKit)
+with **genuine Samsung DeX dual mode**, preserving its normal ADB, APK,
+file management, Logcat, Fastboot, scrcpy, and device management tools.
 
-## Where to launch
+It uses the [ScrcpyDeX](https://github.com/Aureliano021/ScrcpyDex)
+phone-local RTSP activator. Its Apache 2.0 license and attribution are in
+`dex/third_party/scrcpydex/`. The main ADBKit program remains under MIT.
 
-Acer app menu: **ADBKit + Samsung DeX**
-
-Binary: `~/DEV/ADBKit-DeX/bin/ADBKit-DeX`
-
-Source: `~/DEV/ADBKit-DeX`
-
-The original ADBKit AppImage and old PyQt DeX Bridge remain as backups.
-
-## How it works
-
-`internal/app/app_dex.go` exposes `GetSamsungDeXStatus` and
-`SamsungDeXControl`. The frontend displays explicit busy spinners,
-status updates, and actionable errors. The Go backend invokes the existing
-proven phone-local DeX activation script at
-`~/.local/bin/note20-dex-linux`, never mirroring phone display 0.
-
-- **Launch:** activate real Samsung dual-mode DeX if permitted, then attach scrcpy.
-- **Activate:** start local-loopback DeX only.
-- **Attach:** attach to already active DeX without reactivating. Optionally specify
-  a nonzero display ID (e.g. Windows-created display 8).
-- **Stop:** stop only a verified local-loopback session; never terminate
-  external Windows/Miracast connections.
-
-The backend validates that requested displays exist and prevents using display
-ID 0.
-
-## Verified device compatibility
-
-- **Rooted Note20 Ultra, Android 14 One UI 6.1.1 port:** genuine dual-mode
-  desktop successfully activated and streamed as separate display ID 2.
-- **Unrooted SM-N976N Note10, Android 12 One UI 4.1:** ADB-shell activation
-  fails at Samsung's `CONFIGURE_WIFI_DISPLAY` security permission. Use
-  the external Windows/DeX receiver to activate, then **Attach** to the real
-  display (the previously observed display was ID 8). External attach has
-  not been end-to-end retested during this build. The Exynos Note10 uses
-  its own hardware encoder, not the Note20's Qualcomm encoder.
-
-## Validation / rebuild
-
-Wails bindings generated; React frontend builds; DeX-specific Go tests pass;
-native GTK/WebKit build launches and independently activates Note20 DeX.
+## Fast Linux installation (x86_64)
 
 ```bash
-cd ~/DEV/ADBKit-DeX
-~/DEV/adbkit-dex-tools/wails3 generate bindings -clean -ts
-(cd frontend && ~/.bun/bin/bun run build)
-go build -o bin/ADBKit-DeX .
+git clone https://github.com/lotfinity/ADBKit-DeX.git
+cd ADBKit-DeX
+bash scripts/install-linux.sh
 ```
 
-Root modules and system partitions have not been changed by the extension.
-The original standalone script has been backed up in
-`~/.local/share/samsung-dex-bridge-v2/backups/`.
+The installer downloads the prebuilt release and checks its SHA-256. It
+installs user-local files (without changing system partitions):
+- executable `~/.local/opt/adbkit-dex/ADBKit-DeX`;
+- DeX launcher `~/.local/bin/note20-dex-linux`;
+- activation server `~/.local/share/note20-dex/scrcpydex-server.jar`;
+- desktop shortcut `~/.local/share/applications/adbkit-samsung-dex.desktop`.
+
+The installer offers to install required host ADB, scrcpy, and GTK/WebKit
+runtime packages through apt when missing. On non-apt Linux distributions,
+install equivalent packages manually and use `--skip-deps`.
+
+To launch, select **ADBKit + Samsung DeX** in the app menu, or run:
+```bash
+~/.local/opt/adbkit-dex/ADBKit-DeX
+```
+
+## Build from source
+
+With Go 1.26 or later (Go toolchains auto-download in supported versions),
+Bun, GTK4/WebKitGTK 6 development headers, ADB, and scrcpy:
+
+```bash
+bash scripts/install-linux.sh --source
+```
+
+This installs into the same user-local destinations. It does not require
+the Wails CLI because generated bindings are committed. Source install also
+works on compatible CPU architectures if the host has dependencies.
+
+## Device behavior
+
+- **Galaxy Note20 Ultra, One UI 6.1.1 custom port / Android 14:** verified
+  local-loopback true dual-display DeX activation on display ID 2 while
+  Android display 0 remains usable. The display ID is detected dynamically.
+- **Galaxy Note10 SM-N976N, One UI 4.1 / Android 12:** Android rejects
+  loopback activation for shell UID with
+  `android.permission.CONFIGURE_WIFI_DISPLAY`. Start DeX on an authorized
+  Windows client or compatible receiver, then use **Attach existing DeX**.
+  Enter display ID 8 only if that ID is currently present on the device.
+  External attach in the updated ADBKit UI still needs further validation.
+  This Exynos device uses `OMX.Exynos.AVC.Encoder` or automatic encoder
+  selection, not the Qualcomm encoder name.
+- **Other Galaxy phones:** compatibility depends on firmware; the GUI checks
+  for a real separate DeX display and refuses Android display ID 0.
+
+There are four controls in the Samsung DeX screen: Launch (activate or
+attach), Attach (keep existing external activation), Activate only, and
+Stop (only for independently activated local-loopback sessions).
+The UI shows loading animations, errors, bitrate and FPS presets, and
+an optional external DeX display-ID field.
+
+## Technical design
+
+- React UI: `frontend/src/routes/SamsungDeXPage.tsx`
+- Go integration: `internal/app/app_dex.go`
+- Linux shell activator: `dex/linux/note20-dex-linux`
+- Android activation server: `dex/third_party/scrcpydex/scrcpydex-server.jar`
+
+Runtime Go uses the installed launcher at
+`~/.local/bin/note20-dex-linux` (or `DEX_BRIDGE_SCRIPT` override).
+The launcher requires `NOTE20_SERIAL` when multiple ADB connections are
+active; the GUI passes the selected serial automatically. It never mirrors
+display 0 and does not grant root privileges.
+
+## Tested
+
+Acer Debian 13, GTK4 4.18, WebKitGTK 6, scrcpy 4.0:
+- Wails native Linux executable built and started;
+- React frontend built with Bun and TypeScript;
+- DeX-specific Go unit tests passed;
+- Note20 genuine DeX display 2 activated and streamed.
+
+## Other operating systems
+
+The bundled launcher is a **Linux Bash** implementation. The ADBKit core
+is cross-platform, but independent DeX on Windows/macOS is **not yet
+packaged or validated** in this fork. Please do not assume the Linux release
+binary will run on Windows or on Android phones themselves.

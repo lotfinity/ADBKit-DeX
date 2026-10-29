@@ -2,9 +2,27 @@
   <img src="build/appicon.png" alt="ADBKit icon" width="96">
 </p>
 
-<h1 align="center">ADBKit</h1>
+<h1 align="center">ADBKit + Samsung DeX</h1>
 
-<p align="center">A desktop toolkit for Android device work with ADB, Fastboot, and scrcpy.</p>
+<p align="center">An extended Android device toolkit with <strong>genuine Samsung DeX dual-display support</strong> for Linux.</p>
+
+> **Community fork:** built on [Drenzzz/ADBKit](https://github.com/Drenzzz/ADBKit) (MIT) and the
+> [ScrcpyDeX](https://github.com/Aureliano021/ScrcpyDex) Android activator (Apache 2.0).
+> This is not affiliated with or endorsed by Samsung, ADBKit, or ScrcpyDeX.
+
+### Clone and install on Linux
+
+```bash
+git clone https://github.com/lotfinity/ADBKit-DeX.git
+cd ADBKit-DeX
+bash scripts/install-linux.sh
+```
+
+Open **ADBKit + Samsung DeX** from the app menu. This downloads a checksum-verified
+Linux x86_64 binary, installs the DeX launcher and activation server, and prepares
+a desktop shortcut. To build locally instead: `bash scripts/install-linux.sh --source`.
+
+[Full Samsung DeX installation guide and compatibility notes](docs/SamsungDeX.md).
 
 <p align="center">
   <a href="https://github.com/Drenzzz/ADBKit/stargazers">
@@ -188,7 +206,7 @@ Screenshots for the dashboard, devices, app manager, File Explorer, Flasher,
 Terminal, Scrcpy, and Settings are in
 [`here`](screenshots/README.md).
 
-## Samsung DeX extension (local fork)
+## Samsung DeX extension (this fork)
 
 This fork adds a genuine Samsung dual-mode DeX workspace to ADBKit, including
 independent phone-local activation (when allowed by the device firmware),
