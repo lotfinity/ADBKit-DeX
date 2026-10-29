@@ -183,11 +183,15 @@ func (a *App) SamsungDeXControl(serial, action string, bitrate, fps int) (string
 	cmd := exec.Command(script, targetMode)
 	cmd.Env = append(os.Environ(),
 		"NOTE20_SERIAL="+state.Serial,
-		fmt.Sprintf("DEX_DISPLAY_ID=%d", forcedDisplay),
 		fmt.Sprintf("DEX_VIDEO_BITRATE=%dM", bitrate),
 		fmt.Sprintf("DEX_MAX_FPS=%d", fps),
 		"DEX_WINDOW_TITLE=Samsung DeX - "+state.Model,
 	)
+	// ID=0 is the 'auto-detect' sentinel in the UI, never a display to stream.
+	// Do not export an override unless the user explicitly chose a nonzero ID.
+	if forcedDisplay > 0 {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("DEX_DISPLAY_ID=%d", forcedDisplay))
+	}
 	if action == "activate" || action == "stop" {
 		ctx, cancel := context.WithTimeout(context.Background(), 55*time.Second)
 		defer cancel()
@@ -216,6 +220,26 @@ func (a *App) SamsungDeXControl(serial, action string, bitrate, fps int) (string
 	if err != nil {
 		return "", err
 	}
-	go cmd.Wait()
-	return fmt.Sprintf("%s launched for %s (process %d). Status and errors: %s", targetMode, state.Model, cmd.Process.Pid, logfile), nil
+	// A successful cmd.Start only means a process was forked.  The old
+	// implementation unconditionally reported success even if scrcpy exited
+	// immediately (e.g. an invalid display ID or missing graphical session).
+	finished := make(chan error, 1)
+	go func() { finished <- cmd.Wait() }()
+	select {
+	case exitErr := <-finished:
+		logData, readErr := os.ReadFile(logfile)
+		details := ""
+		if readErr == nil {
+			details = strings.TrimSpace(string(logData))
+			if len(details) > 3000 {
+				details = details[len(details)-3000:]
+			}
+		}
+		if exitErr != nil {
+			return "", fmt.Errorf("DeX viewer exited without opening a window: %w\n%s", exitErr, details)
+		}
+		return "", fmt.Errorf("DeX viewer ended immediately (no window). %s", details)
+	case <-time.After(4 * time.Second):
+		return fmt.Sprintf("DeX viewer process %d is still running for %s. If no window appears, inspect %s", cmd.Process.Pid, state.Model, logfile), nil
+	}
 }
